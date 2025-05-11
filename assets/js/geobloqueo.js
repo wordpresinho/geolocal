@@ -106,10 +106,11 @@
     // Reemplazar etiquetas dinámicas en el texto
     function replaceMessageTags(text, data) {
         return text
-            .replace('{dispositivo}', data.deviceName)
-            .replace('{browser}', data.browser)
-            .replace('{distancia}', data.distance)
-            .replace('{os}', data.os);
+            .replace(/{dispositivo}/g, data.deviceName)
+            .replace(/{browser}/g, data.browser)
+            .replace(/{distancia}/g, formatDistance(data.distance))
+            .replace(/{distance}/g, formatDistance(data.distance))
+            .replace(/{os}/g, data.os);
     }
 
     // Verificar si la página debe ser bloqueada
@@ -179,7 +180,7 @@
                             const messageData = {
                                 deviceName: deviceName,
                                 browser: deviceInfo.split(' - ')[2],
-                                distance: formatDistance(response.data.distance),
+                                distance: response.data.distance,
                                 os: deviceInfo.split(' - ')[1]
                             };
                             
