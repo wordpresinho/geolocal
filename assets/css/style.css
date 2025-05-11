@@ -1,0 +1,98 @@
+/* GeoBloqueo By Daz - Main Styles */
+
+#geobloqueo-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.geobloqueo-container {
+    text-align: center;
+    max-width: 500px;
+    padding: 30px;
+    background-color: rgba(30, 30, 30, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.geobloqueo-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: white;
+    line-height: 1.4;
+}
+
+.geobloqueo-container p {
+    margin-bottom: 25px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #e0e0e0;
+}
+
+#geobloqueo-activate {
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+#geobloqueo-activate:hover {
+    background-color: #d81b60;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+}
+
+#geobloqueo-error {
+    color: #ff6b6b;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.checking-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.location-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #ffffff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Prevenir interacción con la página mientras se verifica */
+.geobloqueo-blocked {
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.geobloqueo-blocked #geobloqueo-overlay {
+    pointer-events: auto;
+}

@@ -1,0 +1,117 @@
+/* Admin styles */
+.card {
+    background: white;
+    border: 1px solid #e2e4e7;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+#map {
+    width: 100%;
+    height: 400px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.status-success {
+    color: #46b450;
+    font-weight: bold;
+}
+
+.status-error {
+    color: #dc3232;
+    font-weight: bold;
+}
+
+.tablenav .actions {
+    padding: 2px 0;
+}
+
+.wp-list-table .column-distance {
+    width: 100px;
+}
+
+.wp-list-table .column-access_time {
+    width: 150px;
+}
+
+.statistics-card {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: -10px;
+}
+
+.stat-box {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 10px;
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+}
+
+.stat-box h3 {
+    margin: 0 0 10px 0;
+    color: #23282d;
+}
+
+.stat-box .number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0073aa;
+}
+
+.filters {
+    margin: 20px 0;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 4px;
+}
+
+.filters input[type="date"],
+.filters select {
+    margin-right: 10px;
+}
+
+.export-button {
+    margin: 20px 0;
+}
+
+/* Responsive tables */
+@media screen and (max-width: 782px) {
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.column-primary)::before {
+        position: relative;
+        left: 0;
+        display: block;
+        overflow: hidden;
+        width: 100%;
+        content: attr(data-colname);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-primary {
+        padding-right: 50px;
+    }
+    
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.column-primary) {
+        display: block;
+        clear: both;
+        width: 100%;
+        padding: 4px 5px;
+    }
+}
