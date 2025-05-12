@@ -108,6 +108,96 @@ class GeoBloqueo_By_Daz {
         $this->debug_mode = isset($_GET['RunDebug']);
     }
 
+    public function register_settings() {
+        // Register settings
+        register_setting('geobloqueo_settings', 'geobloqueo_is_active');
+        register_setting('geobloqueo_settings', 'geobloqueo_latitude');
+        register_setting('geobloqueo_settings', 'geobloqueo_longitude');
+        register_setting('geobloqueo_settings', 'geobloqueo_max_distance');
+        register_setting('geobloqueo_settings', 'geobloqueo_address');
+        register_setting('geobloqueo_settings', 'geobloqueo_postal_code');
+        register_setting('geobloqueo_settings', 'geobloqueo_google_maps_key');
+        register_setting('geobloqueo_settings', 'geobloqueo_vpn_api_key');
+        register_setting('geobloqueo_settings', 'geobloqueo_messages');
+        register_setting('geobloqueo_settings', 'geobloqueo_notifications');
+        register_setting('geobloqueo_settings', 'geobloqueo_rate_limit');
+        register_setting('geobloqueo_settings', 'geobloqueo_access_hours');
+    }
+
+    public function add_admin_menu() {
+        // Add main menu
+        add_menu_page(
+            'GeoBloqueo Settings',
+            'GeoBloqueo',
+            'manage_options',
+            'geobloqueo-settings',
+            array($this, 'render_settings_page'),
+            'dashicons-location',
+            30
+        );
+        
+        // Add submenu
+        add_submenu_page(
+            'geobloqueo-settings',
+            'Access Logs',
+            'Access Logs',
+            'manage_options',
+            'geobloqueo-logs',
+            array($this, 'render_logs_page')
+        );
+    }
+
+    public function render_settings_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Include settings page template
+        require_once plugin_dir_path(__FILE__) . 'admin/settings-page.php';
+    }
+
+    public function render_logs_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Include logs page template
+        require_once plugin_dir_path(__FILE__) . 'admin/logs-page.php';
+    }
+
+    public function admin_scripts($hook) {
+        if ('toplevel_page_geobloqueo-settings' !== $hook) {
+            return;
+        }
+        
+        wp_enqueue_style(
+            'geobloqueo-admin-style',
+            plugins_url('assets/css/admin.css', __FILE__),
+            array(),
+            '1.0'
+        );
+        
+        wp_enqueue_script(
+            'geobloqueo-admin-script',
+            plugins_url('assets/js/admin.js', __FILE__),
+            array('jquery'),
+            '1.0',
+            true
+        );
+        
+        // Only load Google Maps if we have an API key
+        $google_maps_key = get_option('geobloqueo_google_maps_key');
+        if (!empty($google_maps_key)) {
+            wp_enqueue_script(
+                'google-maps',
+                'https://maps.googleapis.com/maps/api/js?key=' . esc_attr($google_maps_key),
+                array(),
+                null,
+                true
+            );
+        }
+    }
+
     public function handle_debug_mode() {
         if ($this->debug_mode && current_user_can('manage_options')) {
             add_action('wp_footer', array($this, 'display_debug_info'));
@@ -459,105 +549,6 @@ class GeoBloqueo_By_Daz {
         ));
     }
 
-    public function admin_scripts($hook) {
-        if ('toplevel_page_geobloqueo-settings' !== $hook) {
-            return;
-        }
-        
-        wp_enqueue_style(
-            'geobloqueo-admin-style',
-            plugins_url('assets/css/admin.css', __FILE__),
-            array(),
-            '1.0'
-        );
-        
-        wp_enqueue_script(
-            'geobloqueo-admin-script',
-            plugins_url('assets/js/admin.js', __FILE__),
-            array('jquery'),
-            '1.0',
-            true
-        );
-        
-        wp_enqueue_script(
-            'google-maps',
-            'https://maps.googleapis.com/maps/api/js?key=' . get_option('geobloqueo_google_maps_key'),
-            array(),
-            null,
-            true
-        );
-    }
-
-    public function add_admin_menu() {
-        add_menu_page(
-            'GeoBloqueo Settings',
-            'GeoBloqueo',
-            'manage_options',
-            'geobloqueo-settings',
-            array($this, 'render_settings_page'),
-            'dashicons-location',
-            30
-        );
-        
-        add_submenu_page(
-            'geobloqueo-settings',
-            'Access Logs',
-            'Access Logs',
-            'manage_options',
-            'geobloqueo-logs',
-            array($this, 'render_logs_page')
-        );
-    }
-
-    public function render_settings_page() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-        
-        include(plugin_dir_path(__FILE__) . 'admin/settings-page.php');
-    }
-
-    public function render_logs_page() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-        
-        include(plugin_dir_path(__FILE__) . 'admin/logs-page.php');
-    }
-
-    private function calculate_distance($lat1, $lon1, $lat2, $lon2) {
-        $r = 6371000; // Earth's radius in meters
-        
-        $lat1 = deg2rad($lat1);
-        $lon1 = deg2rad($lon1);
-        $lat2 = deg2rad($lat2);
-        $lon2 = deg2rad($lon2);
-        
-        $dlat = $lat2 - $lat1;
-        $dlon = $lon2 - $lon1;
-        
-        $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        
-        return $r * $c;
-    }
-
-    private function detect_vpn() {
-        $ip = $_SERVER['REMOTE_ADDR'];
-        
-        // Check against known VPN providers
-        $response = wp_remote_get("https://vpnapi.io/api/{$ip}?key=" . get_option('geobloqueo_vpn_api_key'));
-        
-        if (!is_wp_error($response)) {
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-            if (isset($data['security']['vpn']) && $data['security']['vpn']) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
     private function check_rate_limit() {
         if (!$this->rate_limit['enabled']) {
             return true;
@@ -596,6 +587,39 @@ class GeoBloqueo_By_Daz {
         return $current_time >= $this->access_hours['start'] && $current_time <= $this->access_hours['end'];
     }
 
+    private function calculate_distance($lat1, $lon1, $lat2, $lon2) {
+        $r = 6371000; // Earth's radius in meters
+        
+        $lat1 = deg2rad($lat1);
+        $lon1 = deg2rad($lon1);
+        $lat2 = deg2rad($lat2);
+        $lon2 = deg2rad($lon2);
+        
+        $dlat = $lat2 - $lat1;
+        $dlon = $lon2 - $lon1;
+        
+        $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        
+        return $r * $c;
+    }
+
+    private function detect_vpn() {
+        $ip = $_SERVER['REMOTE_ADDR'];
+        
+        // Check against known VPN providers
+        $response = wp_remote_get("https://vpnapi.io/api/{$ip}?key=" . get_option('geobloqueo_vpn_api_key'));
+        
+        if (!is_wp_error($response)) {
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            if (isset($data['security']['vpn']) && $data['security']['vpn']) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     public function cleanup_old_logs() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'geobloqueo_logs';
@@ -613,6 +637,34 @@ class GeoBloqueo_By_Daz {
         $settings_link = '<a href="admin.php?page=geobloqueo-settings">' . __('Settings') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
+    }
+
+    private function send_notification_email($type, $data) {
+        if (!$this->email_notifications['enabled']) {
+            return;
+        }
+
+        $subject = '';
+        $message = '';
+
+        switch ($type) {
+            case 'vpn_detected':
+                $subject = 'GeoBloqueo: VPN Detection Alert';
+                $message = sprintf(
+                    "VPN usage detected:\n\nIP: %s\nDevice: %s\nBrowser: %s\nOS: %s\nLocation: %s, %s",
+                    $data['ip'],
+                    $data['device_info'],
+                    $data['browser'],
+                    $data['os'],
+                    $data['location']['city'],
+                    $data['location']['country']
+                );
+                break;
+        }
+
+        if ($subject && $message) {
+            wp_mail($this->email_notifications['email'], $subject, $message);
+        }
     }
 }
 
